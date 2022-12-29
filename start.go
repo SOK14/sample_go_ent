@@ -208,3 +208,30 @@ func QueryGithub(ctx context.Context, client *ent.Client) error {
 	// Output: (Car(Model=Tesla, RegisteredAt=<Time>), Car(Model=Mazda, RegisteredAt=<Time>),)
 	return nil
 }
+
+func QueryArielCars(ctx context.Context, client *ent.Client) error {
+	// Get "Ariel" from previous steps.
+	a8m := client.User.
+		Query().
+		Where(
+			user.HasCars(),
+			user.Name("Ariel"),
+		).
+		OnlyX(ctx)
+	cars, err := a8m.
+		QueryGroups(). // Get the groups, that a8m is connected to (Group(Name=Github), Grop(Name=Gitlab),)
+		QueryUsers().  // (User(Name=Ariel, Age=30), User(Name=Neta, Age=28),)
+		QueryCars().
+		Where(
+			car.Not( // Get Neta and Ariel cars, but filter out those who named "Mazda"
+				car.Model("Mazda"),
+			),
+		).
+		All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed getting cars: %w", err)
+	}
+	log.Println("cars returned:", cars)
+	// Output: (Car(Model=Tesla, RegisteredAt=<Time>, Car(Model=Ford, RegisteredAt=<Time>)))
+	return nil
+}
