@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entdemo/ent"
+	"entdemo/ent/car"
 	"entdemo/ent/user"
 
 	_ "github.com/lib/pq"
@@ -86,4 +87,22 @@ func CreateCars(ctx context.Context, client *ent.Client) (*ent.User, error) {
 	}
 	log.Println("user was created: ", a8m)
 	return a8m, nil
+}
+
+func QueryCars(ctx context.Context, a8m *ent.User) error {
+	cars, err := a8m.QueryCars().All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed querying user cars: %w", err)
+	}
+	log.Println("returned cars; ", cars)
+
+	// what about filtering apecific cars
+	ford, err := a8m.QueryCars().
+		Where(car.Model("Ford")).
+		Only(ctx)
+	if err != nil {
+		return fmt.Errorf("failed querying user cars: %w", err)
+	}
+	log.Println(ford)
+	return nil
 }
